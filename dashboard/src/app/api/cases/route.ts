@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
-import { CosmosClient } from '@azure/cosmos';
-
-function getContainer() {
-  const connectionString = process.env.COSMOS_CONNECTION_STRING;
-  if (!connectionString) throw new Error('COSMOS_CONNECTION_STRING not set');
-  const client = new CosmosClient(connectionString);
-  return client.database('support-agent').container('cases');
-}
+import { getContainer } from '@/lib/cosmos';
 
 export async function GET() {
   try {

@@ -1,6 +1,9 @@
 import { CosmosClient, Container } from '@azure/cosmos';
 import { SupportCase } from './types.js';
 
+const DB_NAME = process.env.COSMOS_DB_NAME || 'support-agent';
+const CONTAINER_NAME = process.env.COSMOS_CONTAINER_NAME || 'cases';
+
 let container: Container;
 
 export function initCosmos() {
@@ -10,8 +13,8 @@ export function initCosmos() {
   }
 
   const client = new CosmosClient(connectionString);
-  const database = client.database('support-agent');
-  container = database.container('cases');
+  const database = client.database(DB_NAME);
+  container = database.container(CONTAINER_NAME);
 }
 
 export async function createCase(supportCase: SupportCase): Promise<void> {
@@ -39,19 +42,6 @@ export async function getPendingCases(): Promise<SupportCase[]> {
   const { resources } = await container.items
     .query<SupportCase>({
       query: "SELECT * FROM c WHERE c.status = 'pending_approval' ORDER BY c.createdAt DESC",
-    })
-    .fetchAll();
-  return resources;
-}
-
-export async function getCasesByUser(conversationId: string, userId: string): Promise<SupportCase[]> {
-  const { resources } = await container.items
-    .query<SupportCase>({
-      query: 'SELECT * FROM c WHERE c.conversationId = @convId AND c.userId = @userId ORDER BY c.createdAt DESC',
-      parameters: [
-        { name: '@convId', value: conversationId },
-        { name: '@userId', value: userId },
-      ],
     })
     .fetchAll();
   return resources;

@@ -4,6 +4,6 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "COSMOS_CONNECTION_STRING": "",
-    "BOT_NOTIFY_URL": "http://localhost:3979/api/notify"
+    "BOT_NOTIFY_URL": "http://localhost:3980/api/notify"
   }
 }

@@ -56,40 +56,44 @@ app.on('message', async ({ stream, activity }) => {
   });
 });
 
-// Start the Teams bot
-app.start(process.env.PORT || 3978).catch(console.error);
+// Start the bot, then start the notification endpoint once the app is ready
+async function main() {
+  await app.start(process.env.PORT || 3978);
 
-// Notification endpoint for proactive messages from Durable Functions
-const notifyPort = Number(process.env.NOTIFY_PORT || 3979);
-const notifyServer = createServer(async (req, res) => {
-  if (req.method === 'POST' && req.url === '/api/notify') {
-    let body = '';
-    req.on('data', (chunk) => (body += chunk));
-    req.on('end', async () => {
-      try {
-        const { conversationId, userId, message } = JSON.parse(body);
-        console.log(`📨 Proactive message for ${conversationId}/${userId}: ${message}`);
+  // Notification endpoint for proactive messages from Durable Functions
+  // Uses a separate port to avoid conflicting with DevtoolsPlugin (bot port + 1)
+  const notifyPort = Number(process.env.NOTIFY_PORT || 3980);
+  const notifyServer = createServer(async (req, res) => {
+    if (req.method === 'POST' && req.url === '/api/notify') {
+      let body = '';
+      req.on('data', (chunk) => (body += chunk));
+      req.on('end', async () => {
+        try {
+          const { conversationId, userId, message } = JSON.parse(body);
+          console.log(`Proactive message for ${conversationId}/${userId}: ${message}`);
 
-        // Send proactive message via the bot adapter
-        await app.send(conversationId, {
-          type: 'message',
-          text: message,
-        });
+          await app.send(conversationId, {
+            type: 'message',
+            text: message,
+          });
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-      } catch (err) {
-        console.error('Notify error:', err);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to send notification' }));
-      }
-    });
-  } else {
-    res.writeHead(404);
-    res.end();
-  }
-});
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true }));
+        } catch (err) {
+          console.error('Notify error:', err);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to send notification' }));
+        }
+      });
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
+  });
 
-notifyServer.listen(notifyPort, () => {
-  console.log(`Notification endpoint listening on port ${notifyPort}`);
-});
+  notifyServer.listen(notifyPort, () => {
+    console.log(`Notification endpoint listening on port ${notifyPort}`);
+  });
+}
+
+main().catch(console.error);

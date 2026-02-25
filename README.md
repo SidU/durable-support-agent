@@ -14,14 +14,19 @@ Three processes work together:
 
 They communicate via Durable Functions HTTP APIs (start orchestration, raise events) and a shared Cosmos DB container.
 
+![Architecture diagram](architecture.png)
+
+<details>
+<summary>Mermaid source</summary>
+
 ```mermaid
 sequenceDiagram
     participant User as Teams User
-    participant Bot as Teams Bot<br/>(port 3978)
+    participant Bot as Teams Bot
     participant OpenAI as OpenAI GPT-4o
     participant Cosmos as Cosmos DB
-    participant DF as Durable Functions<br/>(port 7071)
-    participant Dash as Dashboard<br/>(port 3000)
+    participant DF as Durable Functions
+    participant Dash as Case Dashboard
     participant Sup as Supervisor
 
     User->>Bot: "I was charged twice for order #4821"
@@ -30,16 +35,14 @@ sequenceDiagram
     Bot-->>OpenAI: Order data (items, total, status)
     OpenAI-->>Bot: Call issue_refund(4821, $79.98, ...)
     Bot->>Cosmos: Create case (status: pending_approval)
-    Bot->>DF: POST /api/orchestrators/supportCaseOrchestrator
-    DF-->>Bot: orchestrationId
-    Bot->>Cosmos: Back-fill orchestrationId on case
+    Bot->>DF: Start orchestration (instanceId = caseId)
     Bot-->>User: "Refund submitted, pending approval. Case: case-abc123"
 
     Note over DF: Orchestrator calls waitForExternalEvent("Approval")<br/>Pauses here — costs nothing while waiting
 
     Note over User,Bot: Bot remains fully responsive.<br/>User can ask other questions, check case status, etc.
 
-    Sup->>Dash: Opens http://localhost:3000
+    Sup->>Dash: Opens Case Dashboard
     Dash->>Cosmos: GET /api/cases (polls every 5s)
     Cosmos-->>Dash: Pending cases
     Dash-->>Sup: Shows cases table
@@ -55,6 +58,8 @@ sequenceDiagram
     DF->>Bot: POST /api/notify (proactive message)
     Bot-->>User: "Your refund of $79.98 has been approved!"
 ```
+
+</details>
 
 ## Why Durable Functions?
 

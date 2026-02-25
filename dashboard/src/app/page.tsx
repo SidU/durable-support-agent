@@ -1,17 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-interface SupportCase {
-  id: string;
-  userName: string;
-  orderId: string;
-  action: 'refund' | 'escalation';
-  refundAmount?: number;
-  issueDescription: string;
-  createdAt: string;
-  status: string;
-}
+import type { SupportCase } from '@/lib/types';
 
 export default function DashboardPage() {
   const [cases, setCases] = useState<SupportCase[]>([]);

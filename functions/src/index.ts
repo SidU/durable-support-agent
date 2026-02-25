@@ -19,9 +19,14 @@ app.http('startOrchestration', {
   handler: async (req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     const client = df.getClient(context);
     const orchestratorName = req.params.orchestratorName;
-    const body = await req.json() as { caseId: string };
+
+    const body = (await req.json()) as Record<string, unknown>;
+    if (!body.caseId || typeof body.caseId !== 'string') {
+      return { status: 400, jsonBody: { error: 'Missing required field: caseId' } };
+    }
 
     const instanceId = await client.startNew(orchestratorName, {
+      instanceId: body.caseId,
       input: body,
     });
 
@@ -43,19 +48,14 @@ app.http('approveCase', {
     const client = df.getClient(context);
     const caseId = req.params.caseId;
 
-    // Look up orchestration ID from Cosmos DB
-    const { CosmosClient } = await import('@azure/cosmos');
-    const cosmosClient = new CosmosClient(process.env.COSMOS_CONNECTION_STRING!);
-    const container = cosmosClient.database('support-agent').container('cases');
-
-    const { resource: supportCase } = await container.item(caseId, caseId).read();
-    if (!supportCase) {
-      return { status: 404, jsonBody: { error: `Case ${caseId} not found` } };
+    const status = await client.getStatus(caseId);
+    if (!status || !status.instanceId) {
+      return { status: 404, jsonBody: { error: `No orchestration found for case ${caseId}` } };
     }
 
-    await client.raiseEvent(supportCase.orchestrationId, 'Approval', { approved: true });
+    await client.raiseEvent(caseId, 'Approval', { approved: true });
 
-    context.log(`Approved case ${caseId} (orchestration: ${supportCase.orchestrationId})`);
+    context.log(`Approved case ${caseId}`);
 
     return { status: 200, jsonBody: { ok: true, caseId, action: 'approved' } };
   },
@@ -70,18 +70,14 @@ app.http('rejectCase', {
     const client = df.getClient(context);
     const caseId = req.params.caseId;
 
-    const { CosmosClient } = await import('@azure/cosmos');
-    const cosmosClient = new CosmosClient(process.env.COSMOS_CONNECTION_STRING!);
-    const container = cosmosClient.database('support-agent').container('cases');
-
-    const { resource: supportCase } = await container.item(caseId, caseId).read();
-    if (!supportCase) {
-      return { status: 404, jsonBody: { error: `Case ${caseId} not found` } };
+    const status = await client.getStatus(caseId);
+    if (!status || !status.instanceId) {
+      return { status: 404, jsonBody: { error: `No orchestration found for case ${caseId}` } };
     }
 
-    await client.raiseEvent(supportCase.orchestrationId, 'Approval', { approved: false });
+    await client.raiseEvent(caseId, 'Approval', { approved: false });
 
-    context.log(`Rejected case ${caseId} (orchestration: ${supportCase.orchestrationId})`);
+    context.log(`Rejected case ${caseId}`);
 
     return { status: 200, jsonBody: { ok: true, caseId, action: 'rejected' } };
   },

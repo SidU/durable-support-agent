@@ -3,7 +3,7 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { searchKnowledgeBase } from './knowledge-base.js';
-import { createCase, getCase, updateCase } from './cosmos.js';
+import { createCase, getCase } from './cosmos.js';
 import { Order, Customer, SupportCase } from './types.js';
 
 // Load mock data
@@ -114,7 +114,8 @@ export function registerTools(
     async ({ order_id, amount, reason, email }: { order_id: string; amount: number; reason: string; email: string }) => {
       const caseId = generateCaseId();
 
-      // Save case to Cosmos DB first so the orchestrator's activities can read it
+      // Save case to Cosmos DB first so the orchestrator's activities can read it.
+      // The caseId doubles as the orchestration instance ID — no backfill needed.
       const supportCase: SupportCase = {
         id: caseId,
         conversationId: context.conversationId,
@@ -126,7 +127,7 @@ export function registerTools(
         action: 'refund',
         refundAmount: amount,
         status: 'pending_approval',
-        orchestrationId: '', // will be back-filled after starting orchestration
+        orchestrationId: caseId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -139,7 +140,7 @@ export function registerTools(
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ caseId }),
+          body: JSON.stringify({ caseId, action: 'refund' }),
         }
       );
 
@@ -147,16 +148,8 @@ export function registerTools(
         return JSON.stringify({ error: 'Failed to start approval workflow' });
       }
 
-      const orchestration = await startRes.json() as { id: string };
-      const orchestrationId = orchestration.id;
-
-      // Back-fill the orchestration ID on the case
-      await updateCase(caseId, { orchestrationId });
-
-      console.log(`\n✅ Case created: ${caseId}`);
-      console.log(`   Orchestration: ${orchestrationId}`);
-      console.log(`   Approve via dashboard at http://localhost:3000`);
-      console.log(`   Or via CLI: curl -X POST ${FUNCTIONS_BASE_URL}/api/cases/${caseId}/approve\n`);
+      console.log(`Case created: ${caseId}`);
+      console.log(`Approve via CLI: curl -X POST ${FUNCTIONS_BASE_URL}/api/cases/${caseId}/approve`);
 
       return JSON.stringify({
         caseId,
@@ -191,7 +184,7 @@ export function registerTools(
         issueDescription: `[${priority.toUpperCase()}] ${reason}`,
         action: 'escalation',
         status: 'pending_approval',
-        orchestrationId: '',
+        orchestrationId: caseId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -204,7 +197,7 @@ export function registerTools(
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ caseId }),
+          body: JSON.stringify({ caseId, action: 'escalation' }),
         }
       );
 
@@ -212,14 +205,7 @@ export function registerTools(
         return JSON.stringify({ error: 'Failed to start escalation workflow' });
       }
 
-      const orchestration = await startRes.json() as { id: string };
-      const orchestrationId = orchestration.id;
-
-      await updateCase(caseId, { orchestrationId });
-
-      console.log(`\n🔴 Escalation created: ${caseId} (priority: ${priority})`);
-      console.log(`   Orchestration: ${orchestrationId}`);
-      console.log(`   Review via dashboard at http://localhost:3000\n`);
+      console.log(`Escalation created: ${caseId} (priority: ${priority})`);
 
       return JSON.stringify({
         caseId,

@@ -16,15 +16,15 @@
 "dev": "tsx watch -r dotenv/config src/index.ts"
 },
 "dependencies": {
-"@microsoft/teams.ai": "latest",
-"@microsoft/teams.api": "latest",
-"@microsoft/teams.apps": "latest",
-"@microsoft/teams.cards": "latest",
-"@microsoft/teams.common": "latest",
-"@microsoft/teams.dev": "latest",
-"@microsoft/teams.graph": "latest",
-"@microsoft/teams.openai": "latest",
-"@azure/cosmos": "^4.2.0"
+"@microsoft/teams.ai": "^2.0.5",
+"@microsoft/teams.api": "^2.0.5",
+"@microsoft/teams.apps": "^2.0.5",
+"@microsoft/teams.cards": "^2.0.5",
+"@microsoft/teams.common": "^2.0.5",
+"@microsoft/teams.dev": "^2.0.5",
+"@microsoft/teams.graph": "^2.0.5",
+"@microsoft/teams.openai": "^2.0.5",
+"@azure/cosmos": "^4.9.1"
 },
 "devDependencies": {
 "@types/node": "^22.5.4",
