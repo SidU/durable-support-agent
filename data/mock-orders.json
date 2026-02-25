@@ -1,0 +1,59 @@
+[
+  {
+    "orderId": "4821",
+    "customerEmail": "alice@contoso.com",
+    "items": [
+      { "name": "Contoso Wireless Mouse", "quantity": 1, "price": 29.99 },
+      { "name": "Contoso USB-C Hub", "quantity": 1, "price": 49.99 }
+    ],
+    "total": 79.98,
+    "status": "delivered",
+    "orderDate": "2025-12-15",
+    "deliveryDate": "2025-12-20"
+  },
+  {
+    "orderId": "4822",
+    "customerEmail": "bob@contoso.com",
+    "items": [
+      { "name": "Contoso Mechanical Keyboard", "quantity": 1, "price": 89.99 }
+    ],
+    "total": 89.99,
+    "status": "delivered",
+    "orderDate": "2025-12-18",
+    "deliveryDate": "2025-12-23"
+  },
+  {
+    "orderId": "4823",
+    "customerEmail": "carol@contoso.com",
+    "items": [
+      { "name": "Contoso 4K Monitor", "quantity": 1, "price": 349.99 },
+      { "name": "Contoso Monitor Stand", "quantity": 1, "price": 59.99 }
+    ],
+    "total": 409.98,
+    "status": "shipped",
+    "orderDate": "2026-01-05",
+    "deliveryDate": null
+  },
+  {
+    "orderId": "4824",
+    "customerEmail": "alice@contoso.com",
+    "items": [
+      { "name": "Contoso Noise-Cancelling Headphones", "quantity": 1, "price": 149.99 }
+    ],
+    "total": 149.99,
+    "status": "processing",
+    "orderDate": "2026-02-10",
+    "deliveryDate": null
+  },
+  {
+    "orderId": "4825",
+    "customerEmail": "dave@contoso.com",
+    "items": [
+      { "name": "Contoso Webcam Pro", "quantity": 2, "price": 69.99 }
+    ],
+    "total": 139.98,
+    "status": "delivered",
+    "orderDate": "2025-11-28",
+    "deliveryDate": "2025-12-03"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "email": "alice@contoso.com",
+    "name": "Alice Johnson",
+    "phone": "555-0101",
+    "memberSince": "2023-03-15",
+    "tier": "gold"
+  },
+  {
+    "email": "bob@contoso.com",
+    "name": "Bob Smith",
+    "phone": "555-0102",
+    "memberSince": "2024-01-20",
+    "tier": "silver"
+  },
+  {
+    "email": "carol@contoso.com",
+    "name": "Carol Davis",
+    "phone": "555-0103",
+    "memberSince": "2024-06-10",
+    "tier": "bronze"
+  },
+  {
+    "email": "dave@contoso.com",
+    "name": "Dave Wilson",
+    "phone": "555-0104",
+    "memberSince": "2022-11-01",
+    "tier": "gold"
+  }
+]
