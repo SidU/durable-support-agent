@@ -14,11 +14,6 @@ Three processes work together:
 
 They communicate via Durable Functions HTTP APIs (start orchestration, raise events) and a shared Cosmos DB container.
 
-![Architecture diagram](architecture.png)
-
-<details>
-<summary>Mermaid source</summary>
-
 ```mermaid
 sequenceDiagram
     participant User as Teams User
@@ -58,8 +53,6 @@ sequenceDiagram
     DF->>Bot: POST /api/notify (proactive message)
     Bot-->>User: "Your refund of $79.98 has been approved!"
 ```
-
-</details>
 
 ## Why Durable Functions?
 
